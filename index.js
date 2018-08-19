@@ -170,7 +170,6 @@ setInterval(function () {
                                 }
                             );
                         }
-                        console.log(lastBalance)
                     }
                 }
             )
