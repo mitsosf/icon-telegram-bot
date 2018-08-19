@@ -7,18 +7,13 @@ const bigInt = require('big-integer');
 //Global Variables
 let chatId = '0'; //Unique chat ID
 let address = 'hx0000000000000000000000000000000000000000'; //Set address for monitoring
-const timeout = 2000; //Used for aesthetic purposes
-const interval = config.interval;  //Time be
+const interval = config.interval;  //Time between balance updates
 
 //Welcome message
 bot.on('/start', (msg) => {
     msg.reply.text('Welcome to the ICX Balance bot. This bot will let you know when your balance changes in an ICX wallet of yours');
-    setTimeout(() => {
-        msg.reply.text('Send the command "/address yourAddress" where yourAddress is your ICX address')
-    }, timeout);
-    setTimeout(() => {
-        msg.reply.text('eg. /address hxc4193cda4a75526bf50896ec242d6713bb6b02a3')
-    }, timeout);
+    msg.reply.text('Send the command "/address yourAddress" where yourAddress is your ICX address');
+    msg.reply.text('eg. /address hxc4193cda4a75526bf50896ec242d6713bb6b02a3');
 });
 
 //Add address
