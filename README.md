@@ -3,6 +3,12 @@ Telegram bot, providing information for an ICON(ICX) wallet.
  
 Just experimenting a bit with the ICON RPC API
 
+# Features
+
+- /showBalanceOf hx000... : Shows address balance
+- /address hx000... : Set or change address for live updates
+- /showAddress : Show currently monitored address
+
 # Installation instructions
 **0. Prerequisites:**
 
