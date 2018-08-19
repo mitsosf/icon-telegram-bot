@@ -111,7 +111,7 @@ bot.on('/showBalance', () => {
                 "method": "icx_getBalance",
                 "id": config.requestId,
                 "params": {
-                    "address": tempAddress
+                    "address": address
                 }
             }
         }, (error, response, body) => {
