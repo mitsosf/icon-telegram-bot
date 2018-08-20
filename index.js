@@ -166,7 +166,7 @@ setInterval(function () {
                         else {
                             lastBalance.value = balance.value;
                             request({
-                                    url: 'https://api.telegram.org/bot' + config.telegramBotToken + '/sendMessage?chat_id=' + chatId + '&text=The balance of ' + address + ' is ' + balance + ' ICX'
+                                    url: 'https://api.telegram.org/bot' + config.telegramBotToken + '/sendMessage?chat_id=' + chatId + '&text=Your balance is:\n' + balance + ' ICX'
                                 }
                             );
                         }
