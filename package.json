@@ -2,9 +2,10 @@
   "name": "icon-telegram-bot",
   "version": "1.0.0",
   "description": "ICON telegram bot",
-  "main": "index.js",
+  "main": "bot.js",
   "scripts": {
-    "dev": "nodemon index.js"
+    "dev": "nodemon bot.js",
+    "prod": "node bot.js"
   },
   "repository": {
     "type": "git",
