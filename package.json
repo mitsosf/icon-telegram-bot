@@ -4,7 +4,7 @@
   "description": "ICON telegram bot",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "nodemon index.js"
   },
   "repository": {
     "type": "git",
@@ -17,8 +17,10 @@
   },
   "homepage": "https://github.com/mitsosf/icon-telegram-bot#readme",
   "dependencies": {
-    "request": "^2.88.0",
     "big-integer": "^1.6.34",
+    "mongoose": "^5.2.9",
+    "nodemon": "^1.18.3",
+    "request": "^2.88.0",
     "telebot": "^1.2.6"
   }
 }
