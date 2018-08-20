@@ -3,8 +3,8 @@ const {Schema} = mongoose;
 
 const connectionSchema = new Schema({
     chatId: String,
-    username: String,
-    address: String
+    address: String,
+    lastBalance: String
 });
 
 mongoose.model('connections', connectionSchema)

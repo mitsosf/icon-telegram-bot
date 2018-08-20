@@ -30,7 +30,8 @@ bot.on('/start', (msg) => {
             new Connection({
                 chatId: chatId,
                 username: username,
-                address: 'hx0000000000000000000000000000000000000000'
+                address: 'hx0000000000000000000000000000000000000000',
+                lastBalance: '0x0'
             }).save();
         }
     });
@@ -94,13 +95,15 @@ bot.on(/^\/address (.+)$/, (msg, props) => {
 
     //Get chatID
     chatId = msg.chat.id;
+    let address;
+    let lastRecordedBalance;
 
     Connection.find({
         chatId: chatId
     }).then((existingConnection) => {
         if (existingConnection) {
             //Get Address
-            let address = props.match[1];
+            address = props.match[1];
 
             //Validate address
             let hx = address.substring(0, 2); //Check if address starts with hx
@@ -127,6 +130,69 @@ bot.on(/^\/address (.+)$/, (msg, props) => {
 
                 msg.reply.text('Your address is ' + address);
             }
+
+            //Monitoring
+            setInterval(function () {
+
+                    Connection.findOne({
+                        chatId: chatId
+                    }).then((connection) => {
+                        if (connection) {
+                            chatId = connection.chatId;
+                            address = connection.address;
+                            lastRecordedBalance = connection.lastBalance;
+                        }
+
+                        request.post({
+
+                                url: config.requestURL,
+                                json: true,
+                                body: {
+                                    "jsonrpc": "2.0",
+                                    "method": "icx_getBalance",
+                                    "id": config.requestId,
+                                    "params": {
+                                        "address": address
+                                    }
+                                }
+                            }, (error, response, body) => {
+
+                                if (body != null) {
+                                    let balanceInHex = body.result.response;
+                                    let cut0xbalance = balanceInHex.substring(2);
+                                    let balance = new bigInt(cut0xbalance, 16).divide(Math.pow(10, 18-config.decimalPrecision)); //maintaining floating accuracy of 2 digits
+                                    //console.log('Current balance: ' + balance);
+
+
+                                    let cut0xLastBalance = lastRecordedBalance.substring(2);
+                                    let lastBalance = new bigInt(cut0xLastBalance, 16).divide(Math.pow(10, 18-config.decimalPrecision)); //maintaining floating accuracy of 2 digits
+                                    //console.log('Last balance: ' + lastBalance);
+
+
+                                    if (balance.value !== lastBalance.value) {
+                                        lastBalance.value = balance.value;
+                                        Connection.findOneAndUpdate({chatId: chatId}, {$set: {lastBalance: balanceInHex}}, {new: true}, function (err, doc) {
+                                            if (err) {
+                                                console.log("Something wrong when updating data!");
+                                            } else {
+                                                let beautifulBalance = balance.toString().substring(0, balance.toString().length-config.decimalPrecision)+ config.delimiterSymbol +balance.toString().slice(-config.decimalPrecision);
+
+                                                request({
+                                                        url: 'https://api.telegram.org/bot' + config.telegramBotToken + '/sendMessage?chat_id=' + chatId + '&text=Your balance is:\n' + beautifulBalance + ' ICX'
+                                                    }
+                                                );
+                                            }
+                                        });
+                                    }else {
+                                        console.log('test')
+                                    }
+                                }
+                            }
+                        );
+                    });
+                },
+                interval
+            );
         }
     });
 
@@ -201,45 +267,3 @@ bot.on('/help', (msg) => {
 });
 
 bot.connect();
-
-
-//Monitoring
-let lastBalance = new bigInt(0);
-setInterval(function () {
-        if (chatId !== '0' && address !== 'hx0000000000000000000000000000000000000000') {
-            request.post({
-
-                    url: config.requestURL,
-                    json: true,
-                    body: {
-                        "jsonrpc": "2.0",
-                        "method": "icx_getBalance",
-                        "id": config.requestId,
-                        "params": {
-                            "address": address
-                        }
-                    }
-                }, (error, response, body) => {
-
-                    if (body != null) {
-                        let cut0x = body.result.response.substring(2);
-                        let balance = new bigInt(cut0x, 16).divide(Math.pow(10, 18));
-
-                        if (balance.value === lastBalance.value) {
-                            //do nothing
-                            lastBalance = balance;
-                        }
-                        else {
-                            lastBalance.value = balance.value;
-                            request({
-                                    url: 'https://api.telegram.org/bot' + config.telegramBotToken + '/sendMessage?chat_id=' + chatId + '&text=Your balance is:\n' + balance + ' ICX'
-                                }
-                            );
-                        }
-                    }
-                }
-            )
-        }
-    },
-    interval
-);
