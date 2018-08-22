@@ -6,12 +6,30 @@ mongoose.connect(config.mongoURI, {useNewUrlParser: true});
 require('../..//models/Connection');
 const Connection = mongoose.model('connections');
 const bot = require('../../bot');
+let subscribers;
+
 
 //Welcome message
 bot.on('/start', (msg) => {
 
     //Get chatID
     let chatId = msg.chat.id;
+    let result = [{chatId: '0', address: 'hx0', lastBalance: '0x0'}];
+    Connection.find().then((res) => {
+        console.log(res)
+        let json_data = res.stringify();
+        result = [];
+        let i;
+        for (i = 0; i < json_data.length; i++) {
+            console.log(json_data[i].address);
+            if (json_data[i].address !== 'hx0000000000000000000000000000000000000000') {
+
+                result.push(json_data[i]);
+            }
+        }
+        console.log(result);
+    });
+
 
     //Check if user is already registered
     Connection.findOne({

@@ -16,7 +16,6 @@ bot.on(/^\/address (.+)$/, (msg, props) => {
 
     //Get chatID
     let chatId = msg.chat.id;
-    console.log(chatId)
 
     let address;
     let lastRecordedBalance;
@@ -52,65 +51,35 @@ bot.on(/^\/address (.+)$/, (msg, props) => {
                 });
 
                 msg.reply.text('Your address is ' + address);
-            }
 
-            //Monitoring
-            setInterval(function () {
+                request.post({
 
-                    Connection.findOne({
-                        chatId: chatId
-                    }).then((connection) => {
-                        if (connection) {
-                            chatId = connection.chatId;
-                            address = connection.address;
-                            lastRecordedBalance = connection.lastBalance;
-                        }
-
-                        request.post({
-
-                                url: config.requestURL,
-                                json: true,
-                                body: {
-                                    "jsonrpc": "2.0",
-                                    "method": "icx_getBalance",
-                                    "id": config.requestId,
-                                    "params": {
-                                        "address": address
-                                    }
-                                }
-                            }, (error, response, body) => {
-
-                                if (body != null) {
-                                    let balanceInHex = body.result.response;
-                                    let cut0xbalance = balanceInHex.substring(2);
-                                    let balance = new bigInt(cut0xbalance, 16).divide(Math.pow(10, 18-config.decimalPrecision)); //maintaining floating accuracy of x digits (see config file)
-
-                                    let cut0xLastBalance = lastRecordedBalance.substring(2);
-                                    let lastBalance = new bigInt(cut0xLastBalance, 16).divide(Math.pow(10, 18-config.decimalPrecision)); //maintaining floating accuracy of x digits (see config file)
-
-                                    if (balance.value !== lastBalance.value) {
-                                        lastBalance.value = balance.value;
-                                        Connection.findOneAndUpdate({chatId: chatId}, {$set: {lastBalance: balanceInHex}}, {new: true}, function (err, doc) {
-                                            if (err) {
-                                                console.log("Something wrong when updating data!");
-                                            } else {
-                                                let beautifulBalance = balance.value === 0 ? '0' : balance.toString().substring(0, balance.toString().length-config.decimalPrecision)+ config.delimiterSymbol +balance.toString().slice(-config.decimalPrecision);
-
-                                                request({
-                                                        url: 'https://api.telegram.org/bot' + config.telegramBotToken + '/sendMessage?chat_id=' + chatId + '&text=Your balance is:\n' + beautifulBalance + ' ICX'
-                                                    }
-                                                );
-                                            }
-                                        });
-                                    }else {
-                                    }
-                                }
+                        url: config.requestURL,
+                        json: true,
+                        body: {
+                            "jsonrpc": "2.0",
+                            "method": "icx_getBalance",
+                            "id": config.requestId,
+                            "params": {
+                                "address": address
                             }
-                        );
-                    });
-                },
-                config.interval
-            );
+                        }
+                    }, (error, response, body) => {
+
+                        if (body != null) {
+                            let cut0x = body.result.response.substring(2);
+                            let balance = new bigInt(cut0x, 16).divide(Math.pow(10, 18-config.decimalPrecision)); //maintaining floating accuracy of x digits (see config file)
+
+                            let beautifulBalance =  balance.value === 0 ? '0' : balance.toString().substring(0, balance.toString().length-config.decimalPrecision)+ config.delimiterSymbol +balance.toString().slice(-config.decimalPrecision);
+                            request({
+                                    url: 'https://api.telegram.org/bot' + config.telegramBotToken + '/sendMessage?chat_id=' + chatId + '&text=Your balance is:\n' + beautifulBalance + ' ICX'
+                                }
+                            );
+
+                        }
+                    }
+                );
+            }
         }
     });
 

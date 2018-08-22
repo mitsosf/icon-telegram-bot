@@ -15,4 +15,6 @@ require('./bot/functions/showAddress');
 
 require('./bot/functions/showBalance');
 
+require('./bot/functions/monitoring');
+
 bot.connect();
