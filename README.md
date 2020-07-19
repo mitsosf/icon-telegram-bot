@@ -41,7 +41,7 @@ eg. `'telegramBotToken: '658782587:BBWjeuxwakakeoritu_NWJekstikxawjtnm',`
 **4. Start the script**
 
 ```
-node index.js
+npm run prod
 ```
 
 **5. Test it**
